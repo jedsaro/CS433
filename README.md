@@ -1,1 +1,1 @@
-# cs433-assign2
+# cs433 Programming Assignments
