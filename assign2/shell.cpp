@@ -15,14 +15,13 @@ int main(void)
 
 	printf("Tu mama\n");
 	  
-	while (false) {
+	while (should_run) {
 
 		printf("osh> ");
 		fflush(stdout);
 		
 
 		//execvp(, args)recive array 
-
 
 		/**
 		* After reading user input, the steps are:
@@ -31,6 +30,7 @@ int main(void)
 		* (3) parent will invoke wait() unless command included &
 		*/
 
-}
+		should_run = 0;
+	}
 	return 0;
 }
