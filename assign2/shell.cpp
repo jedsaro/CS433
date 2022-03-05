@@ -18,43 +18,44 @@ using namespace std;
 
 // TODO: create a .h file and clean code into functions if possible
 
-int main()
+int main(int argc, char **argv)
 {
-  char *args[MAX_LINE / 2 + 1]; /* command line arguments */
 
-  // string commands [] = {"ps", "-ael", NULL}
+  // char *args[MAX_LINE / 2 + 1]; /* command line arguments */
 
-  string ps = "ps";
-  string ael = "-ael";
-  string exit = "exit";
+  //* user input--------------------------
 
-  pid_t pid = fork();
+  char userInput[MAX_LINE];
 
-  args[0] = (char *)ps.c_str();
-  args[1] = (char *)ael.c_str();
-  args[2] = NULL;
+  cin.getline(userInput, MAX_LINE);
 
+  //*parsing to argv-------------------------
 
-  // TODO: MAKE AN EXIT COMMAND
+  argv[1] = &userInput[0];
 
-  while (1)
-  {
-    
-    if (pid == 0)
+  /*  
+  args[2] = &userInput[1];
+  args[3] = NULL;
+  */
+  // pid_t pid = fork();
+
+  /*
+    while (1)
     {
-      execvp(args[0], args);
-    }
-    
-   /*  if (pid > 0){
 
-      if (wait(NULL) == -1){
-
-        perror(":C ");
+      if (pid == 0)
+      {
+        execvp(args[0], args);
       }
 
-    } */
+     /*  if (pid > 0){
 
-  }
+        if (wait(NULL) == -1){
+
+          perror(":C ");
+        }
+
+      } */
 
   return 0;
 }
