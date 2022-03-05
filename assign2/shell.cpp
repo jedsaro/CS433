@@ -53,12 +53,12 @@ bool input(char* array){
     //!(@briana) add history here
     //ex.. history(array);
 
-    return false;
+    return true;
   }
 
   cout << "NO COMMANDS" << endl;
 
-  return true;
+  return false;
 }
 
 
