@@ -1,104 +1,117 @@
-/**
- * After reading user input, the steps are:
- * (1) fork a child process using fork()
- * (2) the child process will invoke execvp()
- * (3) parent will invoke wait() unless command included &
- */
-
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <iostream>
+#include <vector>
+#include <fcntl.h>
 
 using namespace std;
 
-#define MAX_LINE 80 /* The maximum length command */
+#define MAX_LINE 80
 
-// TODO: create a .h file and clean code into functions if possible
-
-void executeChild(char *array)
+void history_command()
 {
-  // Forking a child
-  pid_t pid = fork();
+  cout << "im working mommy\n";
+  
 
-  if (pid == 0)
-  {
-    if (execvp(&array[0], &array) < 0)
-    {
-      printf("\nCould not execute command..");
-    }
-    exit(0);
-  }
-  else if (pid == -1)
-  {
-    printf("\nFork Failed");
-    return;
-  }
-  else
-  {
-    wait(NULL);
-    return;
-  }
 }
 
+vector<char> add_history(char ** args)
+{
 
-bool input(char* array){
+  vector<char> data (**args,2);
 
-  cin.getline(array, MAX_LINE);
+  return data;
 
-  if (sizeof(*array) != 1){
+}
 
-    //!(@briana) add history here
-    //ex.. history(array);
+//*listens for special commands specified by the assignment
 
-    return true;
+char commands_hub(char **args)
+{
+
+  char gr = *">";
+  char lr = *"<";
+  char history = *"!!";
+
+  if (*args[0] == history)
+  {
+    history_command();
   }
 
-  cout << "NO COMMANDS" << endl;
+  //! unable to make it work
+
+  /*   if (*args[1] == gr || *args[1] == lr)
+    {
+      if (*args[1] == gr)
+      {
+        int fds = open(args[2], O_WRONLY);
+        dup2(fds, 1);
+        // execvp(args[0], &args[2]);
+        close(0);
+      }
+    } */
+}
+
+bool takeInput(char *str, char **args)
+{
+  fgets(str, sizeof(str), stdin);
+
+  int x = 0;
+  args[x] = strtok(str, " \n");
+  while (args[x] != NULL)
+  {
+    // printf("%s\n", args[x]);
+    x++;
+    args[x] = strtok(NULL, " \n");
+  }
+
+  add_history(args);
+  commands_hub(args);
+
+  if (sizeof(args[0] != NULL))
+  {
+    return true;
+  }
 
   return false;
 }
 
-
-int main(void)
+int main()
 {
 
-  // char *args[MAX_LINE / 2 + 1]; /* command line arguments */
+  char *args[MAX_LINE / 2 + 1]; // holds arguments
+  char str[MAX_LINE];           // holds user input
 
+  int should_run = 1;
+  char *token;
 
-  //* user input--------------------------
-
-  char userInput[MAX_LINE]; 
-
-  //char *args[MAX_LINE/2 + 1] ;
-
-
-  int should_run = 1; /* flag to determine when to exit program */
+  pid_t pid;
 
   while (should_run)
   {
 
-    printf("osh-> ");
+    printf("SH> ");
     fflush(stdout);
 
-    if(input(userInput)){
-      continue;
+    takeInput(str, args);
+
+    pid = fork();
+
+    if (pid < 0)
+    {
+      fprintf(stderr, "Fork Failed");
+      return 1;
     }
-
-    executeChild(userInput);
-
-    /**
-     * After reading user input, the steps are:
-     * (1) fork a child process using fork()
-     * (2) the child process will invoke execvp()
-     * (3) parent will invoke wait() unless command included &
-     */
-
-    break;
+    else if (pid == 0)
+    {
+      execvp(args[0], &args[0]);
+    }
+    else
+    {
+      wait(NULL);
+    }
   }
-
-  return 0;
-
 }
