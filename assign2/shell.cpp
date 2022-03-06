@@ -14,17 +14,14 @@ using namespace std;
 void history_command()
 {
   cout << "im working mommy\n";
-  
-
 }
 
-vector<char> add_history(char ** args)
+vector<char> add_history(char **args)
 {
 
-  vector<char> data (**args,2);
+  vector<char> data(**args, 2);
 
   return data;
-
 }
 
 //*listens for special commands specified by the assignment
@@ -39,6 +36,16 @@ char commands_hub(char **args)
   if (*args[0] == history)
   {
     history_command();
+  }
+
+  if (*args[1] == gr)
+  {
+    cout << "working!!!!!!!!!!!!!!!!! '>'  \n";
+  }
+
+  if (*args[1] == lr)
+  {
+    cout << "working!!!!!!!!!!!!!!!!! '>' \n";
   }
 
   //! unable to make it work
@@ -68,7 +75,7 @@ bool takeInput(char *str, char **args)
     args[x] = strtok(NULL, " \n");
   }
 
-  add_history(args);
+  // add_history(args);
   commands_hub(args);
 
   if (sizeof(args[0] != NULL))
