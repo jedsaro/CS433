@@ -1,104 +1,95 @@
-/**
- * After reading user input, the steps are:
- * (1) fork a child process using fork()
- * (2) the child process will invoke execvp()
- * (3) parent will invoke wait() unless command included &
- */
-
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <iostream>
+#include <vector>
+#include <fcntl.h>
 
 using namespace std;
 
-#define MAX_LINE 80 /* The maximum length command */
+#define MAX_LINE 80
 
-// TODO: create a .h file and clean code into functions if possible
-
-void executeChild(char *array)
-{
-  // Forking a child
-  pid_t pid = fork();
-
-  if (pid == 0)
-  {
-    if (execvp(&array[0], &array) < 0)
-    {
-      printf("\nCould not execute command..");
-    }
-    exit(0);
-  }
-  else if (pid == -1)
-  {
-    printf("\nFork Failed");
-    return;
-  }
-  else
-  {
-    wait(NULL);
-    return;
-  }
-}
-
-
-bool input(char* array){
-
-  cin.getline(array, MAX_LINE);
-
-  if (sizeof(*array) != 1){
-
-    //!(@briana) add history here
-    //ex.. history(array);
-
-    return true;
-  }
-
-  cout << "NO COMMANDS" << endl;
-
-  return false;
-}
-
-
-int main(void)
+int main()
 {
 
-  // char *args[MAX_LINE / 2 + 1]; /* command line arguments */
+  vector<char*> data_storage;
 
+  char *args[MAX_LINE / 2 + 1]; // holds arguments
+  char str[MAX_LINE];           // holds user input
 
-  //* user input--------------------------
+  int should_run = 1;
+  char *token;
 
-  char userInput[MAX_LINE]; 
+  char gr = *">";
+  char lr = *"<";
+  char hs = *"!!";
 
-  //char *args[MAX_LINE/2 + 1] ;
-
-
-  int should_run = 1; /* flag to determine when to exit program */
+  pid_t pid;
 
   while (should_run)
   {
 
-    printf("osh-> ");
+    printf("SH> ");
     fflush(stdout);
 
-    if(input(userInput)){
-      continue;
+    fgets(str, sizeof(str), stdin);
+
+    int x = 0;
+    args[x] = strtok(str, " \n");
+    while (args[x] != NULL)
+    {
+      // printf("%s\n", args[x]);
+      x++;
+      args[x] = strtok(NULL, " \n");
+
+
+      //data_storage.push_back(args[x]);
+
     }
 
-    executeChild(userInput);
+    cout << data_storage.front();
 
-    /**
-     * After reading user input, the steps are:
-     * (1) fork a child process using fork()
-     * (2) the child process will invoke execvp()
-     * (3) parent will invoke wait() unless command included &
-     */
 
-    break;
+    pid_t pid = fork();
+
+    if (pid < 0)
+    {
+      fprintf(stderr, "Fork Failed");
+      exit(0);
+    }
+
+    if (pid == 0)
+    {
+
+      if (*args[0] == hs)
+      {
+        cout << "temp";
+      }
+
+      cout << "child: " << pid << endl;
+      
+      execvp(args[0], &args[0]);
+
+      /*
+      else if (true)
+      {
+        cout << "working!!!!!!!!!!!!!!!!! '>'  \n";
+      }
+      
+
+      else if (*args[1] == lr)
+      {
+        cout << "working!!!!!!!!!!!!!!!!! '>' \n";
+      }
+      */
+
+      
+    }
+
+    wait(NULL);
+
+    cout << "parent: " << pid << endl;
   }
-
-  return 0;
-
 }
