@@ -7,12 +7,13 @@
 #include <iostream>
 #include <fcntl.h>
 #include <vector>
+#include <errno.h>
 
 using namespace std;
 
 #define MAX_LINE 80
 
-vector<char*> data;
+vector<char *> data;
 
 char input[MAX_LINE / 2 + 1];
 char *args[MAX_LINE];
@@ -26,6 +27,7 @@ char hs = *"!!";
 void user_input();
 void commands();
 void shell();
+void checkRedirect(char **args);
 
 int main()
 {
@@ -46,24 +48,27 @@ void shell()
     // fit the command into *argv[]
     commands();
 
-    if (data.empty())
-    {
-      for (int i; i < 5; i++)
-        data.insert(data.begin() + i, args[i]);
-    }
-
+    /*   if (data.empty())
+      {
+        for (int i; i < 5; i++)
+          data.insert(data.begin() + i, args[i]);
+      }
+   */
     //! kill me please
-    if (*args[0] == hs)
-    {
-      cout << data.back();
-    }
-
+    /*     if (*args[0] == hs)
+        {
+          cout << data.back();
+        }
+     */
     /*    for (int i = 0; i < 5; i++)
        {
          cout << argv[i] << endl;
        }
     */
     // fork and execute the command
+
+    checkRedirect(args);
+
     pid_t pid = fork();
 
     if (pid < 0)
@@ -75,11 +80,15 @@ void shell()
     if (pid == 0)
     {
       // execute a command
-      execvp(args[0], args);
+      if (execvp(args[0], args))
+      {
+        perror("Command not found\n");
+      };
     }
     else
     {
-        wait(NULL);
+
+      wait(NULL);
 
       /*  if (!data.empty())
        {
@@ -94,7 +103,7 @@ void shell()
 void user_input()
 {
   // get command from user
-  printf("osh> ");
+  printf("osh>");
 
   fgets(input, MAX_LINE / 2 + 1, stdin);
 
@@ -116,6 +125,33 @@ void commands()
     args[token] = ptr;
     token++;
     ptr = strtok(NULL, " ");
+  }
+}
 
+void checkRedirect(char **args)
+{
+  int redirect;
+  int fd;
+
+  for (int i = 0; args[i] != NULL; i++)
+  {
+    if (strcmp(args[i], "<") == 0)
+    {
+      fd = open(args[i + 1], O_RDONLY);
+      dup2(fd, STDIN_FILENO);
+      args[i], args[i + 1] = NULL;
+      redirect = 1;
+    }
+    else if (strcmp(args[i], ">") == 0)
+    {
+      fd = open(args[i + 1], O_WRONLY | O_CREAT, 0644);
+      dup2(fd, STDOUT_FILENO);
+      args[i], args[i + 1] = NULL;
+      redirect = 2;
+    }
+    else
+    {
+      continue;
+    }
   }
 }
