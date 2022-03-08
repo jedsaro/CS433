@@ -5,106 +5,13 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <iostream>
-<<<<<<< HEAD
-#include <vector>
-#include <fcntl.h>
-=======
 #include <fcntl.h>
 #include <vector>
 #include <errno.h>
->>>>>>> josef
 
 using namespace std;
 
 #define MAX_LINE 80
-<<<<<<< HEAD
-
-void history_command()
-{
-  cout << "im working mommy\n";
-}
-
-vector<char> add_history(char **args)
-{
-
-  vector<char> data(**args, 2);
-
-  return data;
-}
-
-//*listens for special commands specified by the assignment
-
-char commands_hub(char **args)
-{
-
-  char gr = *">";
-  char lr = *"<";
-  char history = *"!!";
-
-  if (*args[0] == history)
-  {
-    history_command();
-  }
-
-  if (*args[1] == gr)
-  {
-    cout << "working!!!!!!!!!!!!!!!!! '>'  \n";
-  }
-
-  if (*args[1] == lr)
-  {
-    cout << "working!!!!!!!!!!!!!!!!! '>' \n";
-  }
-
-  //! unable to make it work
-
-  /*   if (*args[1] == gr || *args[1] == lr)
-    {
-      if (*args[1] == gr)
-      {
-        int fds = open(args[2], O_WRONLY);
-        dup2(fds, 1);
-        // execvp(args[0], &args[2]);
-        close(0);
-      }
-    } */
-}
-
-bool takeInput(char *str, char **args)
-{
-  fgets(str, sizeof(str), stdin);
-
-  int x = 0;
-  args[x] = strtok(str, " \n");
-  while (args[x] != NULL)
-  {
-    // printf("%s\n", args[x]);
-    x++;
-    args[x] = strtok(NULL, " \n");
-  }
-
-  // add_history(args);
-  commands_hub(args);
-
-  if (sizeof(args[0] != NULL))
-  {
-    return true;
-  }
-
-  return false;
-}
-
-int main()
-{
-
-  char *args[MAX_LINE / 2 + 1]; // holds arguments
-  char str[MAX_LINE];           // holds user input
-
-  int should_run = 1;
-  char *token;
-
-  pid_t pid;
-=======
 
 vector<char *> data;
 
@@ -120,7 +27,7 @@ char hs = *"!!";
 void user_input();
 void commands();
 void shell();
-void checkRedirect(char **args);
+bool checkRedirect(char **args);
 
 int main()
 {
@@ -160,35 +67,37 @@ void shell()
     */
     // fork and execute the command
 
-    checkRedirect(args);
-
-    pid_t pid = fork();
-
-    if (pid < 0)
+    if (checkRedirect(args))
     {
-      fprintf(stderr, "Fork Failed");
-      exit(0);
-    }
 
-    if (pid == 0)
-    {
-      // execute a command
-      if (execvp(args[0], args))
+      pid_t pid = fork();
+
+      if (pid < 0)
       {
-        perror("Command not found\n");
-      };
-    }
-    else
-    {
+        fprintf(stderr, "Fork Failed");
+        exit(0);
+      }
 
-      wait(NULL);
+      if (pid == 0)
+      {
+        // execute a command
+        if (execvp(args[0], args))
+        {
+          perror("Command not found\n");
+        };
+      }
+      else
+      {
 
-      /*  if (!data.empty())
-       {
-         data.clear();
-         for (int i; i < 5; i++)
-           data.insert(data.begin() + i, argv[i]);
-       } */
+        wait(NULL);
+
+        /*  if (!data.empty())
+         {
+           data.clear();
+           for (int i; i < 5; i++)
+             data.insert(data.begin() + i, argv[i]);
+         } */
+      }
     }
   }
 }
@@ -208,7 +117,6 @@ void user_input()
 
 void commands()
 {
->>>>>>> josef
 
   // split string into argv
   char *ptr;
@@ -222,34 +130,11 @@ void commands()
   }
 }
 
-<<<<<<< HEAD
-    printf("SH> ");
-    fflush(stdout);
-
-    takeInput(str, args);
-
-    pid = fork();
-
-    if (pid < 0)
-    {
-      fprintf(stderr, "Fork Failed");
-      return 1;
-    }
-    else if (pid == 0)
-    {
-      execvp(args[0], &args[0]);
-    }
-    else
-    {
-      wait(NULL);
-    }
-  }
-}
-=======
-void checkRedirect(char **args)
+bool checkRedirect(char **args)
 {
   int redirect;
   int fd;
+  bool answer;
 
   for (int i = 0; args[i] != NULL; i++)
   {
@@ -259,6 +144,7 @@ void checkRedirect(char **args)
       dup2(fd, STDIN_FILENO);
       args[i], args[i + 1] = NULL;
       redirect = 1;
+      answer = false;
     }
     else if (strcmp(args[i], ">") == 0)
     {
@@ -266,11 +152,11 @@ void checkRedirect(char **args)
       dup2(fd, STDOUT_FILENO);
       args[i], args[i + 1] = NULL;
       redirect = 2;
+      answer = false;
     }
-    else
-    {
-      continue;
+    else{
+      answer = true;
     }
   }
+  return answer;
 }
->>>>>>> josef
