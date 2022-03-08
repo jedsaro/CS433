@@ -1,57 +1,68 @@
 #include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #include <iostream>
-#include <vector>
 #include <fcntl.h>
+#include <vector>
 
 using namespace std;
 
 #define MAX_LINE 80
 
+vector<string> data;
+
+char input[MAX_LINE / 2 + 1];
+char *args[MAX_LINE];
+char token;
+int should_run = 1;
+
+char gr = *">";
+char lr = *"<";
+char hs = *"!!";
+
+void user_input();
+void commands();
+void shell();
+
 int main()
 {
 
-  vector<char*> data_storage;
+  // start the shell
+  shell();
 
-  char *args[MAX_LINE / 2 + 1]; // holds arguments
-  char str[MAX_LINE];           // holds user input
+  return 0;
+}
 
-  int should_run = 1;
-  char *token;
-
-  char gr = *">";
-  char lr = *"<";
-  char hs = *"!!";
-
-  pid_t pid;
-
+void shell()
+{
   while (should_run)
   {
+    // get the command from user
+    user_input();
 
-    printf("SH> ");
-    fflush(stdout);
+    // fit the command into *argv[]
+    commands();
 
-    fgets(str, sizeof(str), stdin);
-
-    int x = 0;
-    args[x] = strtok(str, " \n");
-    while (args[x] != NULL)
+    /*   if (data.empty())
+      {
+        for (int i; i < 5; i++)
+          data.insert(data.begin() + i, argv[i]);
+      }
+   */
+    //! kill me please
+    if (*args[0] == hs)
     {
-      // printf("%s\n", args[x]);
-      x++;
-      args[x] = strtok(NULL, " \n");
-
-
-      //data_storage.push_back(args[x]);
-
+      cout << data.back();
     }
-
-    cout << data_storage.front();
-
-
+    /*    for (int i = 0; i < 5; i++)
+       {
+         cout << argv[i] << endl;
+       }
+    */
+    // fork and execute the command
     pid_t pid = fork();
 
     if (pid < 0)
@@ -63,33 +74,48 @@ int main()
     if (pid == 0)
     {
 
-      if (*args[0] == hs)
-      {
-        cout << "temp";
-      }
-
-      cout << "child: " << pid << endl;
-      
-      execvp(args[0], &args[0]);
-
-      /*
-      else if (true)
-      {
-        cout << "working!!!!!!!!!!!!!!!!! '>'  \n";
-      }
-      
-
-      else if (*args[1] == lr)
-      {
-        cout << "working!!!!!!!!!!!!!!!!! '>' \n";
-      }
-      */
-
-      
+      // execute a command
+      execvp(args[0], args);
     }
+    else
+    {
+      // wait for the command to finish if "&" is not present
+      if (NULL == args[token])
+        waitpid(pid, NULL, 0);
 
-    wait(NULL);
+      /*  if (!data.empty())
+       {
+         data.clear();
+         for (int i; i < 5; i++)
+           data.insert(data.begin() + i, argv[i]);
+       } */
+    }
+  }
+}
 
-    cout << "parent: " << pid << endl;
+void user_input()
+{
+  // get command from user
+  printf("Shell>\t");
+  fgets(input, MAX_LINE / 2 + 1, stdin);
+
+  if ((strlen(input) > 0) && (input[strlen(input) - 1] == '\n'))
+    input[strlen(input) - 1] = '\0';
+    
+  // printf("%s\n", cmd);
+}
+
+void commands()
+{
+
+  // split string into argv
+  char *ptr;
+  token = 0;
+  ptr = strtok(input, " ");
+  while (ptr != NULL)
+  {
+    args[token] = ptr;
+    token++;
+    ptr = strtok(NULL, " ");
   }
 }
