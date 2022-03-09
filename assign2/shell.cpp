@@ -13,20 +13,17 @@ using namespace std;
 
 #define MAX_LINE 80
 
-vector<char *> data;
-
 char input[MAX_LINE / 2 + 1];
 char *args[MAX_LINE];
 char token;
 int should_run = 1;
+bool breaker = false;
 
 char gr = *">";
 char lr = *"<";
 char hs = *"!!";
 
-char *history_1;
-char *history_2;
-char *history_3;
+char *history1;
 
 void user_input();
 void commands();
@@ -49,41 +46,47 @@ void shell()
 
     commands();
 
-    if (checkRedirect(args))
+    if (strcmp(args[0], "exit") == 0)
     {
+      break;
 
-      pid_t pid = fork();
-
-      if (pid < 0)
+      if (checkRedirect(args))
       {
-        fprintf(stderr, "Fork Failed");
-        exit(0);
-      }
 
-      if (pid == 0)
-      {
-        // execute a command
-        if (execvp(args[0], args))
+        pid_t pid = fork();
+
+        if (pid < 0)
         {
-          perror("Command not found\n");
-        };
-      }
-      else
-      {
+          fprintf(stderr, "Fork Failed");
+          exit(0);
+        }
 
-        wait(NULL);
+        if (pid == 0)
+        {
+          // execute a command
+          if (execvp(args[0], args))
+          {
+            perror("Command not found\n");
+          };
+        }
+        else
+        {
+          wait(NULL);
+        }
+
+        if (breaker)
+        {
+          break;
+        }
       }
     }
-
-
-
   }
 }
 
 void user_input()
 {
 
-  printf("osh>");
+  printf("osh> ");
 
   fgets(input, MAX_LINE / 2 + 1, stdin);
 
@@ -107,6 +110,7 @@ void commands()
 
 bool checkRedirect(char **args)
 {
+
   int redirect;
   int fd;
   bool answer;
@@ -121,6 +125,7 @@ bool checkRedirect(char **args)
       redirect = 1;
       answer = false;
     }
+
     else if (strcmp(args[i], ">") == 0)
     {
       fd = open(args[i + 1], O_WRONLY | O_CREAT, 0644);
@@ -133,11 +138,11 @@ bool checkRedirect(char **args)
 
   if (strcmp(args[0], "!!") == 0)
   {
-    if (history_1 == NULL)
+    if (history1 == NULL)
     {
       cout << "No history found" << endl;
     }
-
+    
     answer = false;
   }
   else
