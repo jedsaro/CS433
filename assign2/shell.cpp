@@ -22,8 +22,6 @@ char lr = *"<";
 char hs = *"!!";
 bool breaker = true;
 
-char *history1;
-
 void user_input();
 void commands();
 void shell();
@@ -68,10 +66,10 @@ void shell()
       }
     }
 
-    if(exit(args)){
+    if (exit(args))
+    {
       breaker = false;
     }
-
   }
 }
 
@@ -120,27 +118,27 @@ bool checkRedirect(char **args, bool breaker)
   int fd;
   bool answer;
 
-  for (int i = 0; args[i] != NULL; i++)
+  if (strcmp(args[1], "<") == 0)
   {
-    if (strcmp(args[i], "<") == 0)
-    {
-      fd = open(args[i + 1], O_RDONLY);
-      dup2(fd, STDIN_FILENO);
-      args[i], args[i + 1] = NULL;
-      redirect = 1;
-      answer = false;
-    }
-    else if (strcmp(args[i], ">") == 0)
-    {
-      fd = open(args[i + 1], O_WRONLY | O_CREAT, 0644);
-      dup2(fd, STDOUT_FILENO);
-      args[i], args[i + 1] = NULL;
-      redirect = 2;
-      answer = false;
-    }
+    fd = open(args[1 + 1], O_RDONLY);
+    dup2(fd, STDIN_FILENO);
+    args[1], args[1 + 1] = NULL;
+    redirect = 1;
+    answer = false;
+    exit(EXIT_SUCCESS);
   }
 
-  if (strcmp(args[0], "!!") == 0)
+  else if (strcmp(args[1], ">") == 0)
+  {
+    fd = open(args[1 + 1], O_WRONLY | O_CREAT, 0644);
+    dup2(fd, STDOUT_FILENO);
+    args[1], args[1 + 1] = NULL;
+    redirect = 2;
+    answer = false;
+    exit(EXIT_SUCCESS);
+  }
+
+  else if (strcmp(args[0], "!!") == 0)
   {
     if (history1 == NULL)
     {
@@ -148,12 +146,10 @@ bool checkRedirect(char **args, bool breaker)
     }
     answer = false;
   }
-
-  if (strcmp(args[0], "exit") == 0)
+  else if (strcmp(args[0], "exit") == 0)
   {
     answer = false;
   }
-
   else
   {
     answer = true;
