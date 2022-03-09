@@ -20,13 +20,15 @@ char token;
 char gr = *">";
 char lr = *"<";
 char hs = *"!!";
+bool breaker = true;
 
 char *history1;
 
 void user_input();
 void commands();
 void shell();
-bool checkRedirect(char **args);
+bool checkRedirect(char **args, bool breaker);
+bool exit(char **args);
 
 int main()
 {
@@ -37,41 +39,52 @@ int main()
 
 void shell()
 {
-  while (1)
+  while (breaker)
   {
     user_input();
 
     commands();
 
-    if (strcmp(args[0], "exit") == 0)
+    if (checkRedirect(args, breaker))
     {
-      break;
+      pid_t pid = fork();
 
-      if (checkRedirect(args))
+      if (pid < 0)
       {
+        fprintf(stderr, "Fork Failed");
+        exit(0);
+      }
 
-        pid_t pid = fork();
-
-        if (pid < 0)
+      if (pid == 0)
+      {
+        if (execvp(args[0], args))
         {
-          fprintf(stderr, "Fork Failed");
-          exit(0);
-        }
-
-        if (pid == 0)
-        {
-          // execute a command
-          if (execvp(args[0], args))
-          {
-            perror("Command not found\n");
-          };
-        }
-        else
-        {
-          wait(NULL);
-        }
+          perror("Command not found\n");
+        };
+      }
+      else
+      {
+        wait(NULL);
       }
     }
+
+    if(exit(args)){
+      breaker = false;
+    }
+
+  }
+}
+
+bool exit(char **args)
+{
+
+  if (strcmp(args[0], "exit") == 0)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
   }
 }
 
@@ -100,7 +113,7 @@ void commands()
   }
 }
 
-bool checkRedirect(char **args)
+bool checkRedirect(char **args, bool breaker)
 {
 
   int redirect;
@@ -117,7 +130,6 @@ bool checkRedirect(char **args)
       redirect = 1;
       answer = false;
     }
-
     else if (strcmp(args[i], ">") == 0)
     {
       fd = open(args[i + 1], O_WRONLY | O_CREAT, 0644);
@@ -134,6 +146,11 @@ bool checkRedirect(char **args)
     {
       cout << "No history found" << endl;
     }
+    answer = false;
+  }
+
+  if (strcmp(args[0], "exit") == 0)
+  {
     answer = false;
   }
 
