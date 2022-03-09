@@ -16,8 +16,6 @@ using namespace std;
 char input[MAX_LINE / 2 + 1];
 char *args[MAX_LINE];
 char token;
-int should_run = 1;
-bool breaker = false;
 
 char gr = *">";
 char lr = *"<";
@@ -32,7 +30,6 @@ bool checkRedirect(char **args);
 
 int main()
 {
-
   shell();
 
   return 0;
@@ -40,7 +37,7 @@ int main()
 
 void shell()
 {
-  while (should_run)
+  while (1)
   {
     user_input();
 
@@ -72,11 +69,6 @@ void shell()
         else
         {
           wait(NULL);
-        }
-
-        if (breaker)
-        {
-          break;
         }
       }
     }
@@ -142,9 +134,9 @@ bool checkRedirect(char **args)
     {
       cout << "No history found" << endl;
     }
-    
     answer = false;
   }
+
   else
   {
     answer = true;
